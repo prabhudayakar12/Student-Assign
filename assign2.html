@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Student Management System</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f2f5f9;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 25px;
+            color: #1e3a8a;
+        }
+
+        h2 {
+            margin: 25px 0 15px;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+
+        input {
+            width: 100%;
+            padding: 11px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 15px;
+        }
+
+        input:focus {
+            border-color: #2563eb;
+            outline: none;
+        }
+
+        button {
+            padding: 11px 18px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 15px;
+            margin-right: 8px;
+        }
+
+        .add-btn {
+            background: #2563eb;
+            color: white;
+        }
+
+        .add-btn:hover {
+            background: #1d4ed8;
+        }
+
+        .clear-btn {
+            background: #6b7280;
+            color: white;
+        }
+
+        .clear-btn:hover {
+            background: #4b5563;
+        }
+
+        .delete-btn {
+            background: #dc2626;
+            color: white;
+            padding: 7px 12px;
+        }
+
+        .delete-btn:hover {
+            background: #b91c1c;
+        }
+
+        .message {
+            margin: 15px 0;
+            padding: 12px;
+            border-radius: 6px;
+            display: none;
+        }
+
+        .success {
+            background: #dcfce7;
+            color: #166534;
+            display: block;
+        }
+
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+            display: block;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+
+        th {
+            background: #1e3a8a;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background: #f8fafc;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 20px;
+            color: #777;
+        }
+
+        .total {
+            margin-top: 15px;
+            font-weight: bold;
+            color: #333;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>Student Management System</h1>
+
+        <!-- Add Student Form -->
+        <h2>Add Student</h2>
+
+        <form id="studentForm">
+
+            <div class="form-group">
+                <label for="studentId">Student ID</label>
+                <input
+                    type="number"
+                    id="studentId"
+                    placeholder="Enter Student ID">
+            </div>
+
+            <div class="form-group">
+                <label for="studentName">Student Name</label>
+                <input
+                    type="text"
+                    id="studentName"
+                    placeholder="Enter Student Name">
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input
+                    type="text"
+                    id="email"
+                    placeholder="Enter Email">
+            </div>
+
+            <div class="form-group">
+                <label for="age">Age</label>
+                <input
+                    type="number"
+                    id="age"
+                    placeholder="Enter Age">
+            </div>
+
+            <button type="submit" class="add-btn">
+                Add Student
+            </button>
+
+            <button
+                type="button"
+                class="clear-btn"
+                onclick="clearForm()">
+                Clear
+            </button>
+
+        </form>
+
+        <!-- Message -->
+        <div id="message" class="message"></div>
+
+        <!-- Student Table -->
+        <h2>Student Details</h2>
+
+        <table>
+
+            <thead>
+                <tr>
+                    <th>S.No</th>
+                    <th>Student ID</th>
+                    <th>Student Name</th>
+                    <th>Email</th>
+                    <th>Age</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+
+            <tbody id="studentTableBody">
+            </tbody>
+
+        </table>
+
+        <div class="total">
+            Total Students:
+            <span id="totalStudents">0</span>
+        </div>
+
+    </div>
+
+
+    <script>
+
+        // ==========================================
+        // Get saved students from Local Storage
+        // ==========================================
+
+        let students = JSON.parse(
+            localStorage.getItem("students")
+        ) || [];
+
+
+        // ==========================================
+        // Email Validation using Regex
+        // ==========================================
+
+        function validateEmail(email) {
+
+            const emailPattern =
+                /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+
+            return emailPattern.test(email);
+        }
+
+
+        // ==========================================
+        // Show Message
+        // ==========================================
+
+        function showMessage(message, type) {
+
+            const messageBox =
+                document.getElementById("message");
+
+            messageBox.textContent = message;
+
+            messageBox.className =
+                "message " + type;
+
+            setTimeout(function () {
+
+                messageBox.className = "message";
+
+            }, 3000);
+        }
+
+
+        // ==========================================
+        // Add Student
+        // ==========================================
+
+        document
+            .getElementById("studentForm")
+            .addEventListener("submit", function (event) {
+
+                event.preventDefault();
+
+                try {
+
+                    // Get values
+                    const studentId =
+                        document
+                            .getElementById("studentId")
+                            .value.trim();
+
+                    const name =
+                        document
+                            .getElementById("studentName")
+                            .value.trim();
+
+                    const email =
+                        document
+                            .getElementById("email")
+                            .value.trim();
+
+                    const age =
+                        document
+                            .getElementById("age")
+                            .value.trim();
+
+
+                    // ==================================
+                    // Input Validation
+                    // ==================================
+
+                    if (studentId === "") {
+                        throw new Error(
+                            "Student ID is required."
+                        );
+                    }
+
+                    if (name === "") {
+                        throw new Error(
+                            "Student Name is required."
+                        );
+                    }
+
+                    if (email === "") {
+                        throw new Error(
+                            "Email is required."
+                        );
+                    }
+
+                    if (!validateEmail(email)) {
+                        throw new Error(
+                            "Invalid email format."
+                        );
+                    }
+
+                    if (age === "") {
+                        throw new Error(
+                            "Age is required."
+                        );
+                    }
+
+                    if (Number(age) <= 0 || Number(age) > 100) {
+                        throw new Error(
+                            "Age must be between 1 and 100."
+                        );
+                    }
+
+
+                    // ==================================
+                    // Check Duplicate Student ID
+                    // ==================================
+
+                    const duplicate =
+                        students.some(
+                            student =>
+                                student.id === studentId
+                        );
+
+                    if (duplicate) {
+                        throw new Error(
+                            "Student ID already exists."
+                        );
+                    }
+
+
+                    // ==================================
+                    // Create Student Object
+                    // ==================================
+
+                    const student = {
+
+                        id: studentId,
+
+                        name: name,
+
+                        email: email,
+
+                        age: age
+
+                    };
+
+
+                    // ==================================
+                    // Add Student
+                    // ==================================
+
+                    students.push(student);
+
+
+                    // ==================================
+                    // Save Data
+                    // ==================================
+
+                    localStorage.setItem(
+                        "students",
+                        JSON.stringify(students)
+                    );
+
+
+                    // ==================================
+                    // Display Message
+                    // ==================================
+
+                    showMessage(
+                        "Student added successfully!",
+                        "success"
+                    );
+
+
+                    // Clear form
+                    clearForm();
+
+
+                    // Display table
+                    displayStudents();
+
+                }
+
+                catch (error) {
+
+                    // Handle Invalid Input
+                    showMessage(
+                        error.message,
+                        "error"
+                    );
+
+                }
+
+            });
+
+
+        // ==========================================
+        // Display Student Data
+        // ==========================================
+
+        function displayStudents() {
+
+            const tableBody =
+                document.getElementById(
+                    "studentTableBody"
+                );
+
+            tableBody.innerHTML = "";
+
+
+            if (students.length === 0) {
+
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="empty">
+                            No student records found.
+                        </td>
+                    </tr>
+                `;
+
+            }
+
+
+            students.forEach(function (student, index) {
+
+                const row = document.createElement("tr");
+
+                row.innerHTML = `
+
+                    <td>${index + 1}</td>
+
+                    <td>${student.id}</td>
+
+                    <td>${student.name}</td>
+
+                    <td>${student.email}</td>
+
+                    <td>${student.age}</td>
+
+                    <td>
+                        <button
+                            class="delete-btn"
+                            onclick="deleteStudent(${index})">
+                            Delete
+                        </button>
+                    </td>
+
+                `;
+
+                tableBody.appendChild(row);
+
+            });
+
+
+            // Update total
+            document.getElementById(
+                "totalStudents"
+            ).textContent = students.length;
+
+        }
+
+
+        // ==========================================
+        // Delete Student
+        // ==========================================
+
+        function deleteStudent(index) {
+
+            try {
+
+                if (
+                    !confirm(
+                        "Are you sure you want to delete this student?"
+                    )
+                ) {
+                    return;
+                }
+
+                students.splice(index, 1);
+
+
+                // Save updated data
+                localStorage.setItem(
+                    "students",
+                    JSON.stringify(students)
+                );
+
+
+                showMessage(
+                    "Student deleted successfully!",
+                    "success"
+                );
+
+
+                displayStudents();
+
+            }
+
+            catch (error) {
+
+                showMessage(
+                    "Unable to delete student.",
+                    "error"
+                );
+
+            }
+
+        }
+
+
+        // ==========================================
+        // Clear Form
+        // ==========================================
+
+        function clearForm() {
+
+            document.getElementById(
+                "studentForm"
+            ).reset();
+
+        }
+
+
+        // ==========================================
+        // Read Student Data when page loads
+        // ==========================================
+
+        displayStudents();
+
+    </script>
+
+</body>
+
+</html>
